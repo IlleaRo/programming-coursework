@@ -1,33 +1,23 @@
-#include "trees.h"
+#include "FileNode.h"
+#include "Root.h"
+#include "Tree.h"
 #include <iostream>
 
 int main()
 {
     auto* newTree = new Tree<int>(19);
     appendValue(newTree, 32);
-    appendValue(newTree, 35);
-    appendValue(newTree, 312);
-    appendValue(newTree, -23);
+    appendValue(newTree, -35);
 
-    FILE* file;
-
-    if ((file = fopen("treeInFile.bin", "wb")) == NULL) std::cout << "File doesn't exist" << std::ends;
-
-    putTree(newTree, file);
-    fclose(file);
-
-    if ((file = fopen("treeInFile.bin", "r+b")) == NULL) std::cout << "File doesn't exist" << std::ends;
-    newTree->appendTree(0,-2345,file);
-    fclose(file);
+    auto* fileTree = new Root<int>("test.bin",sizeof(int));
 
 
+    putTree(newTree, fileTree);
+    Tree<int>* treeFromFIle1 = getTree(fileTree,treeFromFIle1);
 
-    auto* treeFF = new Tree<int>();
+    fileTree->addValue(43);
+    fileTree->addValue(-235);
 
-    if ((file = fopen("treeInFile.bin", "rb")) == NULL) std::cout << "File doesn't exist" << std::ends;
-
-    treeFF = getTree(0, file,treeFF);
-
-    fclose(file);
+    Tree<int>* t2 = getTree(fileTree,t2);
     return 0;
 }
