@@ -19,9 +19,9 @@ class Tree
     {
         if (pos == FNULL) return NULL;
         auto* tTree = new Tree<T>;
-        FileNode<T> nFTree;
+        FileNode nFTree;
         fseek(fileName, pos, SEEK_SET);
-        fread((char*)&nFTree, sizeof(nFTree), 1, fileName);
+        fread((char*)&nFTree, SOFFN, 1, fileName);
         fread((char*)&(tTree->value), *sizeOfObj, 1, fileName);
         tTree->left = getNode(nFTree.fp_left, fileName,sizeOfObj,returnedTree);
         tTree->right = getNode(nFTree.fp_right, fileName,sizeOfObj,returnedTree);
@@ -31,19 +31,17 @@ class Tree
     friend long putNode(Tree<T>* tTree, FILE* fileName,const int* sizeOfObj)
     {
         if (!tTree) return FNULL;
-        FileNode<T> nFTree; //Текущая вершина - локальная переменная
+        FileNode nFTree; //Текущая вершина - локальная переменная
         fseek(fileName, 0, SEEK_END); //Записать вершину - занять место
         long pos = ftell(fileName); //Запоминаем позицию в файле
-
-        //nFTree.sz = sizeof(tTree->value); //Узнаем количество байт, необходимое для записи ЗПД
-        fwrite((char*)&nFTree, sizeof(nFTree), 1, fileName); //Записываем ветвь
+        fwrite((char*)&nFTree, SOFFN, 1, fileName); //Записываем ветвь
 
         fwrite((char*)&(tTree->value), *sizeOfObj, 1, fileName); //Сохраняем строку, соответствующую ветви
         nFTree.fp_left = putNode(tTree->left, fileName,sizeOfObj); //Рекурсивное сохранение потомков
         nFTree.fp_right = putNode(tTree->right, fileName,sizeOfObj);
 
         fseek(fileName, pos, SEEK_SET); //Обновить вершину
-        fwrite((char*)&nFTree, sizeof(nFTree), 1, fileName);
+        fwrite((char*)&nFTree, SOFFN, 1, fileName);
         return pos;
     }
 

@@ -4,9 +4,9 @@
 #include <cstring>
 
 #define FNULL (-1L)
+#define SOFFN sizeof(FileNode)
 
 
-template <typename T>
 class FileNode{
 public:
     long fp_left;
@@ -16,6 +16,5 @@ public:
         this->fp_right = FNULL;
         this->fp_left = FNULL;
     };
-
 };
 
