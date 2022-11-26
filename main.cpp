@@ -16,11 +16,13 @@ int main()
     appendValue(newTree, 45);
     appendValue(newTree, 67);
     appendValue(newTree, -35);
-
     auto* fileTree = new Root<int>("test.bin");
     putTree(newTree, fileTree);
+
     Tree<int>* treeFromFIle1 = getTree(fileTree,treeFromFIle1);
-    std::cout<<fileTree->deleteVal(50)<<std::endl;
+
+    fileTree->balance();
+
     Tree<int>* treeFromFIle2 = getTree(fileTree,treeFromFIle2);
 
 /*

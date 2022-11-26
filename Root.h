@@ -6,6 +6,7 @@
 #define CURSEWORK_1_ROOT_H
 
 #include "FileNode.h"
+#include <list>
 //#include "Tree.h"
 
 template <typename T>
@@ -206,6 +207,67 @@ class Root
         }
 
     }
+    void getValue(std::list<T>* List, FILE* workFile, long pos) //Функция обхода дерева и поиска суммы
+    {
+        fseek(workFile,pos,SEEK_SET);
+        FileNode fNode; T obj;
+        fread((char*)&fNode,SOFFN,1,workFile);
+        fread((char*)&obj,TSZ,1,workFile);
+        if (fNode.fp_left!=FNULL) getValue(List,workFile,fNode.fp_left);
+        List->push_back(obj);
+        if (fNode.fp_right!=FNULL) getValue(List,workFile,fNode.fp_right);
+    }
+
+    void toBalance(std::list<T>* List)
+    {
+        int sizeL = List->size();
+        if (sizeL==0) return;
+        if (sizeL==1)
+        {
+            this->addValue(List->front());
+            return;
+        }
+       /* if (sizeL==2)
+        {
+            this->addValue(List->front());
+            this->addValue(List->back());
+            return;
+        }*/
+
+        int median;
+        if (sizeL % 2!=0) median = sizeL / 2;
+        else median = sizeL / 2-1;
+        typename std::list<T>::iterator iter = List->begin();
+        std::advance(iter,median);
+        //while(median > **iter) ++iter;
+        this->addValue(*iter);
+        //Что тут делать?
+        //List->erase(iter);
+
+        typename std::list<T>::iterator iterLeft = List->begin();
+        typename std::list<T>::iterator iterRight = --(List->end());
+        std::list<T>* listLeft = new std::list<T>;
+        std::list<T>* listRight = new std::list<T>;
+        bool leftDone = false, rightDone = false;
+        while (true)
+        {
+            if (iterLeft!=iter)
+            {
+                listLeft->push_back(*iterLeft);
+                ++iterLeft;
+            } else leftDone = true;
+            if (iterRight!=iter)
+            {
+                listRight->push_front(*iterRight);
+                --iterRight;
+            } else rightDone = true;
+            if (leftDone && rightDone) break;
+        }
+        toBalance(listLeft);
+        delete listLeft;
+        toBalance(listRight);
+        delete listRight;
+    }
 
 public:
 
@@ -243,7 +305,7 @@ public:
     {
         delete[] this->fileName;
         //delete this->root;
-    } //Деструктор память, выделенную под динамическую переменную
+    } //Деструктор памяти, выделенную под динамическую переменную
 
     void clearFTree() //Очистка дерева - удаление файла
     {
@@ -266,12 +328,25 @@ public:
         if ((readFile = fopen(fileName, "r+b")) == nullptr) return false;
         long pos = search(valToDel);
         if (pos==FNULL) return false;
-        FILE* writeFile;
-        writeFile = fopen("t.bin","wb");
+/*        FILE* writeFile;
+        writeFile = fopen("t.bin","wb");*/
         bool result = reTree(0, valToDel, readFile);
 
         fclose(readFile);
         return result;
+    }
+
+    void balance()
+    {
+        auto* List = new std::list<T>;
+        FILE* workFile;
+        if ((workFile = fopen(fileName, "rb")) == nullptr) return;
+        getValue(List,workFile,0);
+        fclose(workFile);
+        remove(fileName);
+        List->sort();
+        toBalance(List);
+        delete (List);
     }
 };
 
