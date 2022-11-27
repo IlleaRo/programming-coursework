@@ -1,9 +1,10 @@
 #include "Root.h"
 #include "Tree.h"
 #include <iostream>
-
 int main()
 {
+
+
    auto* newTree = new Tree<int>(19);
     appendValue(newTree, 50);
 
@@ -20,27 +21,10 @@ int main()
     putTree(newTree, fileTree);
 
     Tree<int>* treeFromFIle1 = getTree(fileTree,treeFromFIle1);
-
+    std::cout<<*treeFromFIle1<<std::endl;
     fileTree->balance();
 
     Tree<int>* treeFromFIle2 = getTree(fileTree,treeFromFIle2);
-
-/*
-    fileTree->addValue(43);
-    fileTree->addValue(-235);
-
-    Tree<int>* t2 = getTree(fileTree,t2);
-    delete fileTree;
-
-    auto* fileTree2 = new Root<int>("test21.bin");
-
-    Tree<int>* t3 = getTree(fileTree2,t3);
-    //fileTree2->clearFTree();
-    fileTree2->addValue(23);
-    Tree<int>* t4 = getTree(fileTree2,t4);
-    fileTree2->addValue(2324453);
-    Tree<int>* t5 = getTree(fileTree2,t5);*/
-
-
+    std::cout<<*treeFromFIle2;
     return 0;
 }

@@ -5,6 +5,7 @@
 #ifndef CURSEWORK_1_TREE_H
 #define CURSEWORK_1_TREE_H
 
+#include <vector>
 #include "FileNode.h"
 #include "Root.h"
 
@@ -31,20 +32,28 @@ class Tree
     friend long putNode(Tree<T>* tTree, FILE* fileName,const int* sizeOfObj)
     {
         if (!tTree) return FNULL;
-        FileNode nFTree; //Текущая вершина - локальная переменная
-        fseek(fileName, 0, SEEK_END); //Записать вершину - занять место
-        long pos = ftell(fileName); //Запоминаем позицию в файле
-        fwrite((char*)&nFTree, SOFFN, 1, fileName); //Записываем ветвь
+        FileNode nFTree; //РўРµРєСѓС‰Р°СЏ РІРµСЂС€РёРЅР° - Р»РѕРєР°Р»СЊРЅР°СЏ РїРµСЂРµРјРµРЅРЅР°СЏ
+        fseek(fileName, 0, SEEK_END); //Р—Р°РїРёСЃР°С‚СЊ РІРµСЂС€РёРЅСѓ - Р·Р°РЅСЏС‚СЊ РјРµСЃС‚Рѕ
+        long pos = ftell(fileName); //Р—Р°РїРѕРјРёРЅР°РµРј РїРѕР·РёС†РёСЋ РІ С„Р°Р№Р»Рµ
+        fwrite((char*)&nFTree, SOFFN, 1, fileName); //Р—Р°РїРёСЃС‹РІР°РµРј РІРµС‚РІСЊ
 
-        fwrite((char*)&(tTree->value), *sizeOfObj, 1, fileName); //Сохраняем строку, соответствующую ветви
-        nFTree.fp_left = putNode(tTree->left, fileName,sizeOfObj); //Рекурсивное сохранение потомков
+        fwrite((char*)&(tTree->value), *sizeOfObj, 1, fileName); //РЎРѕС…СЂР°РЅСЏРµРј СЃС‚СЂРѕРєСѓ, СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰СѓСЋ РІРµС‚РІРё
+        nFTree.fp_left = putNode(tTree->left, fileName,sizeOfObj); //Р РµРєСѓСЂСЃРёРІРЅРѕРµ СЃРѕС…СЂР°РЅРµРЅРёРµ РїРѕС‚РѕРјРєРѕРІ
         nFTree.fp_right = putNode(tTree->right, fileName,sizeOfObj);
 
-        fseek(fileName, pos, SEEK_SET); //Обновить вершину
+        fseek(fileName, pos, SEEK_SET); //РћР±РЅРѕРІРёС‚СЊ РІРµСЂС€РёРЅСѓ
         fwrite((char*)&nFTree, SOFFN, 1, fileName);
         return pos;
     }
+    friend void printBT(std::ostream& os ,const std::string& prefix, const Tree<T>& node, bool isLeft)
+    {
+        os << prefix;
+        os << (isLeft ? "R---" : "L---" );
+        os << node.value << std::endl; //Р’С‹РІРѕРґ Р·РЅР°С‡РµРЅРёСЏ СѓР·Р»Р°
+        if (node.right) printBT(os, prefix + (isLeft ? "|   " : "    "), *node.right, true); //Р’С‹РІРѕРґРёРј Р»РµРІРѕРµ РїРѕРґРґРµСЂРµРІРѕ
+        if (node.left) printBT(os, prefix + (isLeft ? "|   " : "    "), *node.left, false); //Р’С‹РІРѕРґРёРј РїСЂР°РІРѕРµ РїРѕРґРґРµСЂРµРІРѕ
 
+    }
 public:
     Tree()
     {
@@ -88,6 +97,15 @@ public:
         Tree<T>* returnedTree = getNode(0, fileName, &tInt, yourTree);
         fclose(fileName);
         return returnedTree;
+    }
+
+
+    friend std::ostream& operator<<(std::ostream& os, const Tree<T>& tree)
+    {
+        os <<"ROOT->"<< tree.value << std::endl;
+        if (tree.right) printBT(os, "      ", *tree.right, true); //Р’С‹РІРѕРґРёРј Р»РµРІРѕРµ РїРѕРґРґРµСЂРµРІРѕ
+        if (tree.left) printBT(os, "      ", *tree.left, false); //Р’С‹РІРѕРґРёРј РїСЂР°РІРѕРµ РїРѕРґРґРµСЂРµРІРѕ
+        return os;
     }
 
 };
