@@ -5,6 +5,7 @@
 #ifndef CURSEWORK_1_ROOT_H
 #define CURSEWORK_1_ROOT_H
 
+#include <iostream>
 #include "FileNode.h"
 #include <list>
 //#include "Tree.h"
@@ -27,7 +28,7 @@ class Root
         fwrite((char*)&nValue,TSZ,1,workFile); //Записываем данные вершины
         return pos; //Возвращаем адрес новой вершины
     }
-    long appendTree(long pos, T nValue, FILE* fileName)
+    long appendTree(long pos, T& nValue, FILE* fileName)
     {
         FileNode nNode; T valueFromFTree;
         fseek(fileName,pos,SEEK_SET); //Переходим к началу очередного узла
@@ -50,7 +51,7 @@ class Root
         return nNode.fp_left;
     }
 
-    long searchInNode(long pos,T desValue,FILE* readFile)
+    long searchInNode(long pos,T& desValue,FILE* readFile)
     {
         if (pos == FNULL) return FNULL;
         fseek(readFile, pos, SEEK_SET);
@@ -67,8 +68,9 @@ class Root
         FileNode Node1,Node2; T obj;
         fseek(workFIle,pos,SEEK_SET);
         fread((char*)&Node1,SOFFN,1,workFIle);
-
+        fread((char*)&obj,TSZ,1,workFIle);
         fseek(workFIle,Node1.fp_right,SEEK_SET);
+        long t_pos=ftell(workFIle);
         fread((char*)&Node2,SOFFN,1,workFIle);
         if (Node2.fp_left==FNULL)
         {
@@ -79,7 +81,8 @@ class Root
             fwrite((char*)&obj,TSZ,1,workFIle);
             return;
         }
-        long t_pos;
+        //fseek(workFIle,Node2.fp_left,SEEK_SET);
+
         int sizeOfObj = SOFFN;
         while (true)
         {
@@ -110,21 +113,81 @@ class Root
 
     }
 
-    bool reTree(long pos, T delValue, FILE* readFile) //Функция нахождения узла ДО удаляемого
+    bool reTree(long pos, T& delValue, FILE* readFile) //Функция нахождения узла ДО удаляемого
     {
         fseek(readFile, pos, SEEK_SET); //Чтение очередной вершины
         FileNode fTree; T curVal;
         fread((char*)&fTree, SOFFN, 1, readFile);
         fread((char*)&curVal, TSZ, 1, readFile);
-        //appendValueToFTree(curVal,writeFile);
-        if (delValue<curVal)
+
+        if (delValue==curVal && pos==0)
+        {
+            if (fTree.fp_right==FNULL && fTree.fp_left==FNULL)
+                return true;
+            if (fTree.fp_right==FNULL && fTree.fp_left!=FNULL)
+            {
+                FileNode newRoot; T rootValue;
+                fseek(readFile, fTree.fp_left, SEEK_SET);
+                fread((char *) &newRoot, SOFFN, 1, readFile);
+                fread((char *) &rootValue, TSZ, 1, readFile);
+                fseek(readFile, 0, SEEK_SET);
+                fwrite((char *) &newRoot, SOFFN, 1, readFile);
+                fwrite((char *) &rootValue, TSZ, 1, readFile);
+                return false;
+            }
+            if (fTree.fp_right!=FNULL && fTree.fp_left==FNULL)
+            {
+                FileNode newRoot; T rootValue;
+                fseek(readFile, fTree.fp_right, SEEK_SET);
+                fread((char *) &newRoot, SOFFN, 1, readFile);
+                fread((char *) &rootValue, TSZ, 1, readFile);
+                fseek(readFile, 0, SEEK_SET);
+                fwrite((char *) &newRoot, SOFFN, 1, readFile);
+                fwrite((char *) &rootValue, TSZ, 1, readFile);
+                return false;
+            }
+                leftestFromRightIsLeaf(0, readFile);
+                /*FileNode newRoot; T rootValue;
+                fseek(readFile, fTree.fp_right, SEEK_SET);
+                fread((char *) &newRoot, SOFFN, 1, readFile);
+                fread((char *) &rootValue, TSZ, 1, readFile);
+                if (newRoot.fp_left==FNULL)
+                {
+                    newRoot.fp_left=fTree.fp_left;
+                    fseek(readFile, 0, SEEK_SET);
+                    fwrite((char *) &newRoot, SOFFN, 1, readFile);
+                    fwrite((char *) &rootValue, TSZ, 1, readFile);
+                    return false;
+                }
+                fseek(readFile, newRoot.fp_left, SEEK_SET);
+                FileNode leftestFromRight;
+                fread((char *) &leftestFromRight, SOFFN, 1, readFile);
+                bool completed = false;
+                while (!completed) {
+                    if (leftestFromRight.fp_left == FNULL) {
+                        leftestFromRight.fp_left = fTree.fp_left;
+                        fseek(readFile, -SOFFN, SEEK_CUR);
+                        fwrite((char *) &leftestFromRight, SOFFN, 1, readFile);
+                        completed = true;
+                    } else {
+                        fseek(readFile, leftestFromRight.fp_left, SEEK_SET);
+                        fread((char *) &leftestFromRight, SOFFN, 1, readFile);
+                    }
+                }
+                fseek(readFile, 0, SEEK_SET);
+                fwrite((char *) &newRoot, SOFFN, 1, readFile);
+                fwrite((char *) &rootValue, TSZ, 1, readFile);*/
+                return false;
+        }
+
+        if (delValue<curVal) //Если удаляемое значение меньше текущего, то идем влево
         {
             if (fTree.fp_left==FNULL) return false;
             T lVal;
             fseek(readFile, fTree.fp_left, SEEK_SET);
             fseek(readFile, SOFFN, SEEK_CUR);
             fread((char*)&lVal, TSZ, 1, readFile);
-            if (delValue>lVal) return false;
+            //if (delValue>lVal) return false;
             if (delValue!=lVal) return reTree(fTree.fp_left, delValue, readFile);
 
             fseek(readFile,fTree.fp_left,SEEK_SET);
@@ -136,32 +199,32 @@ class Root
                 fTree.fp_left=FNULL;
                 fseek(readFile, pos, SEEK_SET);
                 fwrite((char*)&fTree,SOFFN,1,readFile);
-                return true;
+                return false;
             }
             if (lTree.fp_left==FNULL && lTree.fp_right!=FNULL) //Не лист, но одна ветвь
             {
                 fTree.fp_left=lTree.fp_right;
                 fseek(readFile, pos, SEEK_SET);
                 fwrite((char*)&fTree,SOFFN,1,readFile);
-                return true;
+                return false;
             }
             if (lTree.fp_left!=FNULL && lTree.fp_right==FNULL) //Не лист, но одна ветвь
             {
                 fTree.fp_left=lTree.fp_left;
                 fseek(readFile, pos, SEEK_SET);
                 fwrite((char*)&fTree,SOFFN,1,readFile);
-                return true;
+                return false;
             }
-            leftestFromRightIsLeaf(lTree.fp_left, readFile);
+            leftestFromRightIsLeaf(fTree.fp_left, readFile);
         }
-        else
+        else //Иначе - вправо
         {
             if (fTree.fp_right==FNULL) return false;
             T lVal;
             fseek(readFile, fTree.fp_right, SEEK_SET);
             fseek(readFile, SOFFN, SEEK_CUR);
             fread((char*)&lVal, TSZ, 1, readFile);
-            if (delValue<lVal) return false;
+            //if (delValue<lVal) return false;
             if (delValue!=lVal) return reTree(fTree.fp_right, delValue, readFile);
 
             fseek(readFile,fTree.fp_right,SEEK_SET);
@@ -173,25 +236,25 @@ class Root
                 fTree.fp_right=FNULL;
                 fseek(readFile, pos, SEEK_SET);
                 fwrite((char*)&fTree,SOFFN,1,readFile);
-                return true;
+                return false;
             }
             if (lTree.fp_left==FNULL && lTree.fp_right!=FNULL) //Не лист, но одна ветвь
             {
                 fTree.fp_right=lTree.fp_right;
                 fseek(readFile, pos, SEEK_SET);
                 fwrite((char*)&fTree,SOFFN,1,readFile);
-                return true;
+                return false;
             }
             if (lTree.fp_left!=FNULL && lTree.fp_right==FNULL) //Не лист, но одна ветвь
             {
                 fTree.fp_right=lTree.fp_left;
                 fseek(readFile, pos, SEEK_SET);
                 fwrite((char*)&fTree,SOFFN,1,readFile);
-                return true;
+                return false;
             }
             leftestFromRightIsLeaf(fTree.fp_right, readFile);
         }
-
+        return false;
     }
     void getValue(std::list<T>* List, FILE* workFile, long pos) //Функция обхода дерева и поиска суммы
     {
@@ -264,11 +327,18 @@ public:
 //        if ((workFile = fopen(file,"rb")) !=NULL) fread((char*)nFTree, SOFFN, 1, workFile);
 //        this->root = nFTree;
 //        fclose(workFile);
-        fileName = new char[sizeof(file)+1];
+        int szName = strlen(file);
+        fileName = new char[szName+1];
         strcpy(this->fileName,file);
+        strcpy(&this->fileName[szName],".bin\0");
+        FILE* workFile;
+        if ((workFile = fopen(this->fileName,"rb"))==nullptr)
+            std::cout<<"New tree has been created!"<<std::endl;
+        else std::cout<<"The file is already exists"<<std::endl;
+        fclose(workFile);
         TSZ=sizeof(T);
     } //инициализация дерева
-    long addValue(T nValue)
+    long addValue(T& nValue)
     {
         FILE* workFile; long returned = 0;
         if ((workFile = fopen(fileName,"r+b")) !=NULL)
@@ -298,7 +368,7 @@ public:
         remove(this->fileName);
     }
 
-    long search(T desiredValue) //Возвращает позицию узла дерева в файле или FNULL
+    long search(T& desiredValue) //Возвращает позицию узла дерева в файле или FNULL
     {
         FILE* workFile;
         if ((workFile = fopen(fileName,"rb"))==nullptr) return FNULL;
@@ -306,16 +376,16 @@ public:
         fclose(workFile);
         return returned;
     }
-    bool deleteVal(T valToDel)
+    bool deleteVal(T& valToDel)
     {
         FILE* readFile;
         if ((readFile = fopen(fileName, "r+b")) == nullptr) return false;
         long pos = search(valToDel);
         if (pos==FNULL) return false;
-        bool result = reTree(0, valToDel, readFile);
-
+        bool isNeedToDel = reTree(0, valToDel, readFile);
         fclose(readFile);
-        return result;
+        if (isNeedToDel) remove(this->fileName);
+        return true;
     }
 
     void balance()
