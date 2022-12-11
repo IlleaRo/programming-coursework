@@ -1,12 +1,9 @@
 #include "Root.h"
 #include "Tree.h"
+#include "Fraction.h"
 #include <iostream>
 
-int testWithInt(char*);
-int testWithClass(char*)
-{
-    return 0;
-}
+template <class T> int demonstration(char*);
 
 
 int main()
@@ -23,11 +20,11 @@ int main()
         {
             case(1):
             {
-                return testWithInt(filename);
+                return demonstration<int>(filename);
             }
             case(2):
             {
-                return testWithClass(filename);
+                return demonstration<Fraction>(filename);
             }
             default: std::cout<<"Please enter the correct number!";
         }
@@ -35,9 +32,10 @@ int main()
 }
 
 
-int testWithInt(char* wf)
+template <class T> int demonstration(char* wf)
 {
-    Root<int> TreeInt(wf);
+    Root<T> newRoot(wf);
+    Tree<T>* tTree;
     short decision;
     while (true)
     {
@@ -48,44 +46,45 @@ int testWithInt(char* wf)
         switch (decision) {
             case(-1):
             {
-                TreeInt.clearFTree();
+                newRoot.clearFTree();
                 break;
             }
             case(1):
             {
-                Tree<int>* tTree = getTree(&TreeInt,tTree);
+                tTree = getTree(&newRoot, tTree);
                 if (tTree) std::cout<<*tTree;
                 clear(tTree);
                 break;
             }
             case(2):
             {
-                int newObj;
+                T newObj;
                 std::cout<<"Object---> "<<std::ends;
                 std::cin>>newObj;
-                TreeInt.addValue(newObj);
+                newRoot.addValue(newObj);
                 break;
             }
             case(3):
             {
-                int desiredObj;
+                T desiredObj;
                 std::cout<<"Object---> "<<std::ends;
                 std::cin>>desiredObj;
-                std::cout<<"Node has this position in file: "<<TreeInt.search(desiredObj)<<std::endl;
+                long pos = newRoot.search(desiredObj);
+                if (pos!=FNULL) std::cout << "Node has this position in file: " << pos << std::endl;
                 break;
             }
             case(4):
             {
-                int desiredObj;
+                T desiredObj;
                 std::cout<<"Object---> "<<std::ends;
                 std::cin>>desiredObj;
-                if (TreeInt.deleteVal(desiredObj)) std::cout<<"Object "<<desiredObj<<" has been deleted"<<std::endl;
+                if (newRoot.deleteVal(desiredObj)) std::cout << "Object " << desiredObj << " has been deleted" << std::endl;
                 else std::cout<<"Incorrect name of object!"<<std::endl;
                 break;
             }
             case(5):
             {
-                TreeInt.balance();
+                newRoot.balance();
                 break;
             }
             case(6): return 0;
