@@ -21,7 +21,6 @@ public:
     friend bool operator>=(const Fraction& f1,Fraction& f2);
     friend bool operator<(const Fraction& f1,Fraction& f2);
     friend bool operator<=(const Fraction& f1,Fraction& f2);
-
 };
 
 
