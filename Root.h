@@ -318,6 +318,7 @@ public:
             fclose(workFile);
             return returned;
         }
+
         counter=1;
         workFile = fopen(fileName,"wb");
         FileNode newRoot;
