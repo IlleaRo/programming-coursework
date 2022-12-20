@@ -319,7 +319,6 @@ public:
             return returned;
         }
         counter=1;
-        //fclose(workFile);
         workFile = fopen(fileName,"wb");
         FileNode newRoot;
         fwrite((char*)& newRoot,SOFFN,1,workFile);
