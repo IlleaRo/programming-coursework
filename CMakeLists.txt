@@ -3,4 +3,5 @@ project(cursework_1)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(cursework_1 main.cpp FileNode.cpp FileNode.h Root.h Fraction.cpp Fraction.h)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static")
+add_executable(cursework_1 main.cpp FileNode.h Root.h Fraction.cpp Fraction.h)

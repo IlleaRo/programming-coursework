@@ -1,7 +1,5 @@
-#pragma once
-
-#include <fstream>
-#include <cstring>
+#ifndef CURSEWORK_1_FILENODE_H
+#define CURSEWORK_1_FILENODE_H
 
 #define FNULL (-1L)
 #define SOFFN sizeof(FileNode)
@@ -17,4 +15,6 @@ public:
         this->fp_left = FNULL;
     };
 };
+
+#endif //CURSEWORK_1_FILENODE_H
 

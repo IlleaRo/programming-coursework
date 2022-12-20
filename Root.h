@@ -1,8 +1,10 @@
 #ifndef CURSEWORK_1_ROOT_H
 #define CURSEWORK_1_ROOT_H
 
-#include <iostream>
 #include "FileNode.h"
+
+#include <iostream>
+#include <cstring>
 #include <list>
 
 template <typename T>
@@ -10,9 +12,10 @@ class Root
 {
     char* fileName; //Название файла, содержащего узлы дерева
     int TSZ; //Размер объекта в байтах, содержащегося в узле
-
+    int counter; //Количество объектов
     long appendValueToFTree(T nValue, FILE* workFile) //Запись нового значения - новой вершины - в файл
     {
+        ++counter;
         long pos; //инициируем новую позицию в файле
         FileNode newNode; //инициируем новую вершину для переданного значения
         newNode.fp_right = newNode.fp_left = FNULL; //Новая вершина дерева - лист
@@ -64,9 +67,10 @@ class Root
         fseek(workFIle,pos,SEEK_SET);
         fread((char*)&Node1,SOFFN,1,workFIle);
         fread((char*)&obj,TSZ,1,workFIle);
-        fseek(workFIle,Node1.fp_right,SEEK_SET);
-        long t_pos=ftell(workFIle);
-        fread((char*)&Node2,SOFFN,1,workFIle);
+
+        fseek(workFIle,Node1.fp_right,SEEK_SET); //Идем вправо
+        long t_pos=ftell(workFIle); //Запоминаем позицию правого
+        fread((char*)&Node2,SOFFN,1,workFIle); //Считываем правое поддерево
         if (Node2.fp_left==FNULL)
         {
             fread((char*)&obj,TSZ,1,workFIle);
@@ -277,6 +281,14 @@ class Root
         if (node.fp_right!=FNULL) printBT(os, prefix + (isRight ? "|   " : "    "), node.fp_right, true,workFile,sizeO); //Выводим левое поддерево
         if (node.fp_left!=FNULL) printBT(os, prefix + (isRight ? "|   " : "    "), node.fp_left, false, workFile,sizeO); //Выводим правое поддерево
     }
+    int countObj(long pos,FILE* readFile)
+    {
+        if (pos==FNULL) return 0;
+        FileNode node;
+        fseek(readFile,pos,SEEK_SET);
+        fread((char*)&node,SOFFN,1,readFile);
+        return 1 + countObj(node.fp_left,readFile) + countObj(node.fp_right,readFile);
+    }
 public:
 
     explicit Root(char* file)
@@ -286,11 +298,16 @@ public:
         strcpy(this->fileName,file);
         strcpy(&this->fileName[szName],".bin\0");
         FILE* workFile;
-        if ((workFile = fopen(this->fileName,"rb"))==nullptr)
-            std::cout<<"New tree has been created!"<<std::endl;
-        else std::cout<<"The file is already exists"<<std::endl;
-        fclose(workFile);
         TSZ=sizeof(T);
+        if ((workFile = fopen(this->fileName,"rb"))==nullptr)
+        {
+            std::cout<<"New tree has been created!"<<std::endl;
+            counter=0;
+            return;
+        }
+        counter = countObj(0,workFile);
+        std::cout<<"The file is already exists"<<std::endl;
+        fclose(workFile);
     } // Конструктор дерева
     long addValue(T& nValue)
     {
@@ -301,6 +318,7 @@ public:
             fclose(workFile);
             return returned;
         }
+        counter=1;
         fclose(workFile);
         workFile= fopen(fileName,"wb");
         FileNode newRoot;
@@ -318,7 +336,8 @@ public:
 
     void clearFTree() //Очистка дерева - удаление файла
     {
-        int a = remove(this->fileName);
+        counter = 0;
+        remove(this->fileName);
     }
 
     long search(T& desiredValue) //Возвращает позицию узла дерева в файле или FNULL
@@ -337,10 +356,11 @@ public:
         fclose(workFile);
         //delete workFile;
         int a;
-        if (res==2)  a =  std::remove(this->fileName);
+        if (res==2) std::remove(this->fileName);
+        if (res!=0) --counter;
         return res;
     } //Метод удаления элемента
-
+    int getCount() {return counter;}; //Получение количества объектов
     void balance()
     {
         auto* List = new std::list<T>;

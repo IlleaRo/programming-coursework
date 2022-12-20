@@ -23,7 +23,14 @@ std::ostream& operator<<(std::ostream& os, Fraction& fraction)
 }
 std::istream& operator>>(std::istream& is, Fraction& fraction)
 {
-    return is>>fraction.numerator>>fraction.denominator;
+    std::cout<<"numerator---> "<<std::ends; is>>fraction.numerator;
+    std::cout<<"denominator---> "<<std::ends; is>>fraction.denominator;
+    if (fraction.denominator==0)
+    {
+        fraction.denominator=1;
+        std::cout<<" denominator = 1"<<std::endl;
+    }
+    return is;
 }
 bool operator==(const Fraction& f1,Fraction& f2)
 {

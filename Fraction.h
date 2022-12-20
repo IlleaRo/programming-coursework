@@ -1,7 +1,3 @@
-//
-// Created by Illea on 10.12.2022.
-//
-
 #ifndef CURSEWORK_1_FRACTION_H
 #define CURSEWORK_1_FRACTION_H
 
